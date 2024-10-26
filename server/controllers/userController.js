@@ -26,7 +26,7 @@ const registerUser = asyncHandler(async (req,res)=>{
     const user = await User.create({name,email,password:hashedPassword});
 
     if (user){
-        res.status(201).json({_id:user.id,name:user.name,email:user.email,password:user.password});
+        res.status(201).json({_id:user.id,name:user.name,email:user.email,password:user.password,token:generateJWTtoken(user._id)});
     } else{
         res.status(400)
         throw new Error("Invalid user data")
@@ -37,11 +37,29 @@ const registerUser = asyncHandler(async (req,res)=>{
 
 
 const loginUser = asyncHandler(async (req,res)=>{
-    res.status(200).json({message:"user logged in"})
+    const {email,password} = req.body;
+
+    const user = await User.findOne({email});
+
+    const passwordMatch = await bcrypt.compare(password,user.password);
+
+    if(user && passwordMatch){
+        res.status(200).json({_id:user.id,name:user.name,email:user.email,token:generateJWTtoken(user._id)})
+    }else{
+        res.status(401);
+        throw new Error("Invalid user data") 
+    }
+
+   
 })
 
 const getCurrentUser = asyncHandler(async (req,res)=>{
-    res.status(200).json({message:" current user"})
+
+    const {_id,name,email} = await User.findById(req.user.id)
+    
+    res.status(200).json({id:_id,name,email});
 })
+
+const generateJWTtoken = id => jwt.sign({id},process.env.JWT_SECRET,{expiresIn:60*60})
 
 module.exports = {registerUser, loginUser, getCurrentUser}

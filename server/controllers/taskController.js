@@ -3,7 +3,7 @@ const Task = require("../models/taskModel")
 
 // get all task
 const getTask = asyncHandler(async (req,res)=>{
-    const tasks = await Task.find();
+    const tasks = await Task.find({user:req.user.id});
     res.status(200).json(tasks);
 })
 
@@ -14,7 +14,8 @@ const setTask = asyncHandler(async (req,res)=>{
         throw new Error('please enter a task')
     }
     const task = await Task.create({
-        text:req.body.text
+        text:req.body.text,
+        user:req.user.id
     })
     res.status(200).json({task});
     
@@ -22,7 +23,19 @@ const setTask = asyncHandler(async (req,res)=>{
 
 // update task
 const updateTask = asyncHandler(async (req,res)=>{
+    const user = await Task.findById(req.user.id);
     const task = await Task.findById(req.params.id);
+
+    if(!user){
+        res.status(401);
+        throw new Error("No such user found")
+    }
+
+    if(task.user.toString() !== user.id){
+        res.status(401);
+        throw new Error("user not authorized to update")
+    }
+    
     if(!task){
         res.status(400)
         throw new Error("Task not found")
@@ -33,7 +46,19 @@ const updateTask = asyncHandler(async (req,res)=>{
 
 // delete task
 const deleteTask = asyncHandler(async (req,res)=>{
+    const user = await Task.findById(req.user.id);
     const task = await Task.findById(req.params.id);
+
+    if(!user){
+        res.status(401);
+        throw new Error("No such user found")
+    }
+
+    if(task.user.toString() !== user.id){
+        res.status(401);
+        throw new Error("user not authorized to delete")
+    }
+
     if(!task){
         res.status(400)
         throw new Error("Task not found")
