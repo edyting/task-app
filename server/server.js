@@ -15,6 +15,7 @@ app.use(errorHandler);
 
 // middleware before routes
 app.use("/api/tasks/",require("./routes/taskRoutes"));
+app.use("/api/users",require("./routes/userRoutes"));
 
 app.listen(port,()=>{
     console.log(`listening on port ${port}...`)

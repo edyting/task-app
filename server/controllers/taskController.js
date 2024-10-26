@@ -20,12 +20,28 @@ const setTask = asyncHandler(async (req,res)=>{
     
 })
 
+// update task
 const updateTask = asyncHandler(async (req,res)=>{
-    res.status(200).json({message:`taskId:${req.params.id} updated successfully`})
+    const task = await Task.findById(req.params.id);
+    if(!task){
+        res.status(400)
+        throw new Error("Task not found")
+    }
+    const updatedTask = await Task.findByIdAndUpdate(req.params.id,req.body,{new:true})
+    res.status(200).json(updatedTask)
 })
 
+// delete task
 const deleteTask = asyncHandler(async (req,res)=>{
-    res.status(200).json({message:`task with id:${req.params.id}, has been deleted successfully`})
+    const task = await Task.findById(req.params.id);
+    if(!task){
+        res.status(400)
+        throw new Error("Task not found")
+    }
+
+    await Task.findByIdAndDelete(req.params.id)
+    
+    res.status(200).json({id:req.params.id})
 })
 
 module.exports ={getTask,setTask,updateTask,deleteTask};
