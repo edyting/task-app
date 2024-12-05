@@ -10,7 +10,7 @@ const registerUser = asyncHandler(async (req,res)=>{
         res.status(400);
         throw new Error("All fields are required");
     }
-
+   
     // check if user exists by checking the email
 
     const userExists = await User.findOne({email});
